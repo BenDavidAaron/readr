@@ -7,9 +7,9 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MILVUS_INSTANCE_HOST=milvus-proxy
-      - MILVUS_INSTANCE_PORT=19530
-      - MILVUS_INSTANCE_NAME=default
+      - MILVUS_HOST=milvus-proxy
+      - MILVUS_PORT=19530
+      - MILVUS_ALIAS=default
     command: uvicorn api.main:app --host=0.0.0.0 --port=5000
     depends_on: 
       - proxy
