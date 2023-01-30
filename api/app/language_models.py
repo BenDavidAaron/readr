@@ -16,7 +16,11 @@ def create_language_model(model_name: str, num_dims: int):
     return model_collection
 
 
-def delete_language_model(model_name: str):
+def get_language_model(model_name: str):
+    return pymilvus.Collection(f"model.{model_name}", using=database.MILVUS_ALIAS)
+
+
+def delete_language_model(model_name: str): 
     """Delete a language model from milvus by removing the record from the meta
     collection, and deleting the collection for the language model"""
     meta_collection = database.create_or_get_model_metadata()
@@ -57,9 +61,7 @@ def __create_language_model_colection__(model_name: str, num_dims: int):
 
 def insert_embedding(model_name: str, word: str, embedding: list[float]):
     """Insert a word embedding into a language model"""
-    model_collection = pymilvus.Collection(
-        name=f"model.{model_name}", using=database.MILVUS_ALIAS
-    )
+    model_collection = get_language_model(model_name)
     model_collection.insert(
         [
             word,
@@ -70,9 +72,7 @@ def insert_embedding(model_name: str, word: str, embedding: list[float]):
 
 def remove_embeddings(model_name: str, words: str):
     """Remove a word embedding from a language model"""
-    model_collection = pymilvus.Collection(
-        name=f"model.{model_name}", using=database.MILVUS_ALIAS
-    )
+    model_collection = get_language_model(model_name)
     words = ",".join(words)
     expr = f"word in ({words})"
     model_collection.delete(expr)
