@@ -1,17 +1,18 @@
+import random
 import pymilvus
-from app import database
+from api import database
 
 
 def create_language_model(model_name: str, num_dims: int):
     """Create a new language model in milvus by adding a record to the meta
     collection, and createing a new collection for the language model"""
     meta_collection = database.create_or_get_model_metadata()
-    meta_collection.insert(
-        [
-            model_name,
-            num_dims,
-        ]
-    )
+    data = [
+        [model_name for _ in range(1)],
+        [num_dims for _ in range(1)],
+        [[random.random() for _ in range(3)] for _ in range(1)],
+    ]
+    meta_collection.insert(data)
     model_collection = __create_language_model_colection__(model_name, num_dims)
     return model_collection
 
@@ -26,7 +27,7 @@ def delete_language_model(model_name: str):
     meta_collection = database.create_or_get_model_metadata()
     meta_collection.delete_records([model_name])
     model_collection = pymilvus.Collection(
-        name=f"model.{model_name}", using=database.MILVUS_ALIAS
+        name=f"model_{model_name}", using=database.MILVUS_ALIAS
     )
     model_collection.drop()
     return model_collection
@@ -34,13 +35,14 @@ def delete_language_model(model_name: str):
 
 def __create_language_model_colection__(model_name: str, num_dims: int):
     """Create a new collection for a language model"""
-    model_name = f"model.{model_name}"
+    model_name = f"model_{model_name}"
     if pymilvus.utility.has_collection(model_name, using=database.MILVUS_ALIAS):
         raise ValueError(f"Collection {model_name} already exists")
     word_field = pymilvus.FieldSchema(
         name="word",
         dtype=pymilvus.DataType.VARCHAR,
         max_length=128,
+        is_primary=True,
     )
     embedding_field = pymilvus.FieldSchema(
         name="embedding",

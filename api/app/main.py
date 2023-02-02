@@ -31,10 +31,15 @@ def view_model(model_name: str):
 
 
 @language_model_router.put("/{model_name}")
-def put_model(model_name: str):
+def put_model(model: LanguageModelSchema):
     """Add a language model"""
-    # create a new collection for this language model
-    return {"added": model_name}
+    if not re.match(r"^[a-zA-Z0-9_]+$", model.name):
+        return fastapi.HTTPException(
+            status_code=400, 
+            detail="Model name must contain only alphanumeric characters and underscores"
+        )
+    language_models.create_language_model(model.name, model.num_dims)
+    return {"added": model.name}
 
 
 @language_model_router.delete("/{model_name}")
